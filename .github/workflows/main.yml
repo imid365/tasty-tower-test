@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -43,6 +43,7 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
+          debug: true  # Add this line to get more debug information
           script: |
             docker pull ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
             docker stop ${{ github.event.repository.name }} || true
@@ -54,3 +55,18 @@ jobs:
               -l "traefik.http.routers.${{ github.event.repository.name }}.tls.certresolver=myresolver" \
               -l "traefik.http.services.${{ github.event.repository.name }}.loadbalancer.server.port=80" \
               ${{ vars.DOCKER_USERNAME }}/${{ github.event.repository.name }}:latest
+
+# Make sure you have set the following in your GitHub repository:
+# Secrets:
+#   - DOCKERHUB_TOKEN
+#   - SERVER_IP
+#   - SERVER_USER
+#   - SERVER_SSH_KEY (the entire private key, including BEGIN and END lines)
+# Variables:
+#   - DOCKER_USERNAME
+#   - DOMAIN
+
+# On your server, ensure that:
+# 1. The public key corresponding to SERVER_SSH_KEY is in ~/.ssh/authorized_keys
+# 2. The Docker network 'web' exists
+# 3. Traefik is set up and running correctly
